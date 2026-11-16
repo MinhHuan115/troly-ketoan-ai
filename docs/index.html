@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assignment AI — Quét màn hình, AI trả đáp án tức thì</title>
+<meta name="description" content="App desktop: bấm 1 phím tắt, AI đọc câu hỏi trên màn hình và trả đáp án ngay ở góc. Miễn phí dùng thử, ẩn khỏi taskbar.">
+<style>
+@font-face{font-family:'Gilroy';font-weight:400;src:url('./assets/Gilroy-400.otf') format('opentype')}
+@font-face{font-family:'Gilroy';font-weight:500;src:url('./assets/Gilroy-500.otf') format('opentype')}
+@font-face{font-family:'Gilroy';font-weight:600;src:url('./assets/Gilroy-600.otf') format('opentype')}
+@font-face{font-family:'Gilroy';font-weight:700;src:url('./assets/Gilroy-700.otf') format('opentype')}
+@font-face{font-family:'Gilroy';font-weight:800;src:url('./assets/Gilroy-800.otf') format('opentype')}
+@font-face{font-family:'Gilroy';font-weight:900;src:url('./assets/Gilroy-900.otf') format('opentype')}
+:root{--brand:#2B5BF0;--brand2:#5B49F0;--ink:#0B1020;--ink2:#2B3350;--muted:#6B7488;
+ --line:#E7EBF5;--card:#fff;--soft:#F4F6FC;--bg:#F3F5FB;--amber:#F59E0B;--green:#12B36B}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Gilroy',system-ui,sans-serif;color:var(--ink);line-height:1.6;background:var(--bg);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.btn{display:inline-flex;align-items:center;gap:9px;height:54px;padding:0 26px;border-radius:15px;font-weight:800;
+ font-size:16px;font-family:'Gilroy';cursor:pointer;border:none;letter-spacing:-.2px;transition:.15s}
+.btn.pri{background:linear-gradient(135deg,#2B5BF0,#5B49F0);color:#fff;box-shadow:0 18px 34px -14px rgba(43,91,240,.65)}
+.btn.pri:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn.sec{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.sec:hover{border-color:#C9D5F7}
+.btn.sm{height:42px;font-size:14px;padding:0 18px;border-radius:12px}
+
+/* header */
+header{position:sticky;top:0;z-index:50;background:rgba(243,245,251,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:66px}
+.logo{display:flex;align-items:center;gap:11px;font-weight:900;font-size:19px;letter-spacing:-.5px}
+.logo img{width:34px;height:34px;object-fit:contain}
+nav{display:flex;align-items:center;gap:26px}
+nav a.l{font-weight:600;font-size:15px;color:var(--ink2)}
+nav a.l:hover{color:var(--brand)}
+@media(max-width:720px){nav a.l{display:none}}
+
+/* hero */
+.hero{text-align:center;padding:66px 0 20px}
+.pill{display:inline-block;background:#EAF0FF;color:var(--brand);font-weight:800;font-size:12.5px;letter-spacing:1px;
+ padding:9px 16px;border-radius:999px;text-transform:uppercase}
+.hero h1{font-size:58px;font-weight:900;letter-spacing:-2px;line-height:1.04;margin:22px 0 0}
+.hero h1 .g{background:linear-gradient(120deg,#2B5BF0,#7C4DF0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.sub{font-size:18px;color:var(--muted);font-weight:500;max-width:620px;margin:20px auto 0}
+.actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.meta{font-size:13.5px;color:var(--muted);font-weight:600;margin-top:16px}
+.warnlink{display:inline-block;margin-top:14px;color:var(--brand);font-weight:700;font-size:14.5px;border-bottom:1.5px dashed #B9CBF7;padding-bottom:1px}
+.warnlink:hover{opacity:.8}
+
+/* app mockup */
+.mock{max-width:430px;margin:44px auto 0;background:#fff;border-radius:22px;border:1px solid var(--line);
+ box-shadow:0 40px 90px -30px rgba(43,91,240,.4);overflow:hidden}
+.mock .bar{height:40px;background:linear-gradient(180deg,#FBFCFE,#F3F6FC);border-bottom:1px solid var(--line);
+ display:flex;align-items:center;gap:7px;padding:0 15px}
+.mock .bar i{width:11px;height:11px;border-radius:50%;display:block}
+.d1{background:#FF5F57}.d2{background:#FEBC2E}.d3{background:#28C840}
+.mock .body{padding:22px}
+.mbrand{display:flex;align-items:center;gap:12px}
+.mbrand img{width:48px;height:48px}
+.mbrand .nm{font-weight:900;font-size:19px;letter-spacing:-.5px}
+.mbrand .ds{font-size:12.5px;color:var(--muted);font-weight:600}
+.mhero{margin-top:15px;border-radius:16px;padding:15px 17px;color:#fff;background:linear-gradient(135deg,#2B5BF0,#5B49F0);text-align:left}
+.mhero .lb{font-size:11px;font-weight:700;opacity:.85;text-transform:uppercase;letter-spacing:.4px}
+.mhero .amt{font-size:30px;font-weight:900;letter-spacing:-1px;margin-top:2px}
+.mans{margin-top:15px;display:flex;align-items:center;gap:12px;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:13px 15px;text-align:left}
+.mans .big{font-size:26px;font-weight:900;color:var(--green)}
+.mans .t{font-size:13px;color:var(--muted);font-weight:600}
+
+/* sections */
+section{padding:64px 0}
+.sec-h{text-align:center;max-width:620px;margin:0 auto 40px}
+.sec-h .k{font-weight:800;font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand)}
+.sec-h h2{font-size:38px;font-weight:900;letter-spacing:-1px;margin-top:10px}
+.sec-h p{font-size:16.5px;color:var(--muted);font-weight:500;margin-top:10px}
+
+/* features */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 10px 26px -18px rgba(11,16,32,.25)}
+.feat .ic{width:48px;height:48px;border-radius:13px;background:#EAF0FF;display:flex;align-items:center;justify-content:center;font-size:24px}
+.feat h3{font-size:17px;font-weight:800;margin-top:14px;letter-spacing:-.3px}
+.feat p{font-size:14px;color:var(--ink2);font-weight:500;margin-top:6px}
+.feat kbd{font-family:'Gilroy';font-weight:800;font-size:12px;background:var(--soft);border:1px solid #DDE3F1;border-bottom-width:2px;border-radius:7px;padding:2px 8px}
+
+/* install guide */
+.guide{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.gwrap{max-width:780px;margin:0 auto}
+.gcard{background:var(--soft);border:1px solid var(--line);border-radius:20px;padding:26px}
+.gcard h3{font-size:19px;font-weight:900;display:flex;align-items:center;gap:10px}
+.gcard p{font-size:15px;color:var(--ink2);font-weight:500;margin-top:10px}
+.step{display:flex;gap:16px;margin-top:22px}
+.step .n{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#2B5BF0,#5B49F0);color:#fff;
+ font-weight:900;font-size:17px;display:flex;align-items:center;justify-content:center;flex:none}
+.step .sb h4{font-size:16px;font-weight:800}
+.step .sb p{font-size:14.5px;color:var(--ink2);margin-top:4px;font-weight:500}
+.step .sb b{color:var(--ink)}
+.smart{margin-top:20px;background:#F0F0F3;border-radius:14px;padding:20px;border:1px solid #E1E1E8;max-width:430px}
+.smart .hd{font-size:17px;font-weight:800;color:#2C2C38;margin-bottom:8px}
+.smart .tx{font-size:13px;color:#5A5A68;font-weight:500}
+.smart .app{font-size:13px;color:#5A5A68;margin-top:12px;font-weight:600}
+.smart .moreinfo{display:inline-block;margin-top:6px;color:#2B5BF0;font-weight:800;font-size:14px}
+.smart .btns{display:flex;gap:10px;margin-top:14px;align-items:center}
+.smart .runbtn{background:#2B5BF0;color:#fff;font-weight:800;font-size:13px;padding:9px 16px;border-radius:8px;position:relative}
+.smart .norun{background:#E4E4EA;color:#5A5A68;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px}
+.smart .point{font-weight:800;color:#2B5BF0;font-size:13px}
+.note{font-size:13.5px;color:var(--muted);font-weight:600;margin-top:18px;text-align:center}
+
+/* final cta */
+.final{text-align:center;padding:76px 0}
+.final h2{font-size:42px;font-weight:900;letter-spacing:-1.4px}
+.final p{font-size:17px;color:var(--muted);font-weight:500;margin:12px 0 28px}
+footer{border-top:1px solid var(--line);padding:26px 0;color:var(--muted);font-size:13.5px;font-weight:600}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+@media(max-width:560px){.hero h1{font-size:40px}.final h2{font-size:30px}.sec-h h2{font-size:28px}}
+</style></head>
+<body>
+
+<header><div class="wrap">
+  <a class="logo" href="#"><img src="./assets/mascot.png" alt="">Assignment AI</a>
+  <nav>
+    <a class="l" href="#features">Tính năng</a>
+    <a class="l" href="#install-guide">Hướng dẫn cài</a>
+    <a class="l" href="https://github.com/MinhHuan115/troly-ketoan-ai">GitHub</a>
+    <a class="btn pri sm" href="https://github.com/MinhHuan115/troly-ketoan-ai/releases/latest/download/AssignmentAI.zip">⬇ Tải về</a>
+  </nav>
+</div></header>
+
+<div class="wrap">
+  <section class="hero">
+    <span class="pill">Miễn phí dùng thử · App desktop · Ẩn khỏi taskbar</span>
+    <h1>Bấm 1 phím,<br><span class="g">ra đáp án ngay.</span></h1>
+    <p class="sub">Có câu hỏi, bài tập hay trắc nghiệm trên màn hình? Bấm phím tắt — AI đọc và trả thẳng
+      <b>đáp án</b> ở góc màn hình. Không cần copy, không cần chuyển qua lại.</p>
+    <div class="actions">
+      <a class="btn pri" href="https://github.com/MinhHuan115/troly-ketoan-ai/releases/latest/download/AssignmentAI.zip">⬇&nbsp; Tải về cho Windows</a>
+      <a class="btn sec" href="https://github.com/MinhHuan115/troly-ketoan-ai">Xem trên GitHub →</a>
+    </div>
+    <div class="meta">Windows 10/11 · ~43 MB · v1.1.0 · Tự động cập nhật</div>
+    <a class="warnlink" href="#install-guide">Windows hiện cảnh báo bảo mật? → Vì sao &amp; cách bỏ qua</a>
+
+    <div class="mock">
+      <div class="bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+      <div class="body">
+        <div class="mbrand"><img src="./assets/mascot.png" alt="">
+          <div><div class="nm">Assignment AI</div><div class="ds">Quét màn hình · AI trả đáp án tức thì</div></div></div>
+        <div class="mhero"><div class="lb">Số dư của bạn</div><div class="amt">30.000đ</div></div>
+        <div class="mans"><div class="big">B</div><div class="t">đáp án hiện ở góc — đã tự copy sẵn</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-h"><div class="k">Tính năng</div>
+      <h2>Mọi thứ để ra đáp án thật nhanh</h2>
+      <p>Quét bằng phím tắt, đáp án gọn ở góc, tự copy — và ẩn hoàn toàn khỏi taskbar.</p></div>
+    <div class="grid">
+      <div class="feat"><div class="ic">🖥️</div><h3>Quét cả màn hình</h3><p>AI tự tìm câu hỏi trong màn hình và trả hết, kể cả nhiều câu. <kbd>Ctrl</kbd> <kbd>Q</kbd></p></div>
+      <div class="feat"><div class="ic">✍️</div><h3>Bôi đen chữ</h3><p>Bôi đen đoạn cần hỏi rồi bấm phím tắt — trả đáp án đúng đoạn đó. <kbd>Ctrl</kbd> <kbd>`</kbd></p></div>
+      <div class="feat"><div class="ic">✂️</div><h3>Cắt 1 vùng</h3><p>Kéo chọn vùng cần hỏi như chụp màn hình. <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>F9</kbd></p></div>
+      <div class="feat"><div class="ic">📋</div><h3>Tự copy &amp; dán nhanh</h3><p>Đáp án tự copy sẵn; dán thẳng vào ô con trỏ bằng <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>F10</kbd>.</p></div>
+      <div class="feat"><div class="ic">💳</div><h3>Số dư &amp; nạp QR</h3><p>Tặng sẵn số dư dùng thử. Hết thì nạp bằng VietQR, tiền tự cộng sau ~1 phút.</p></div>
+      <div class="feat"><div class="ic">🎁</div><h3>Kiếm lượt miễn phí</h3><p>Điểm danh mỗi ngày + mời bạn bè — cả hai cùng nhận thêm số dư.</p></div>
+      <div class="feat"><div class="ic">🫥</div><h3>Ẩn khỏi taskbar</h3><p>Chạy gọn ở khay hệ thống, không hiện trên thanh taskbar. Mở lại bằng <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>F7</kbd>.</p></div>
+      <div class="feat"><div class="ic">🔄</div><h3>Tự động cập nhật</h3><p>Có bản mới, app tự tải và cài ở lần mở kế tiếp. Không cần làm gì thủ công.</p></div>
+      <div class="feat"><div class="ic">🤖</div><h3>Chọn model AI</h3><p>Đổi giữa Grok (rẻ) và Claude Opus (mạnh) — mỗi model giá khác nhau mỗi câu.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="guide" id="install-guide">
+  <div class="wrap gwrap">
+    <div class="gcard">
+      <h3>🛡️ Về cảnh báo bảo mật của Windows</h3>
+      <p>Đừng lo — đây là chuyện bình thường với mọi app mới từ developer độc lập. Để Windows hết cảnh báo,
+      app phải mua <b>chứng chỉ ký số EV</b> (~$300–700/năm) mà Microsoft bán cho các công ty lớn. Đây chỉ là
+      một tool học tập bình thường. Bạn chỉ thấy cảnh báo này <b>1 lần duy nhất</b> khi cài lần đầu.</p>
+
+      <div class="step"><div class="n">1</div><div class="sb">
+        <h4>Lúc tải về (trình duyệt)</h4>
+        <p>Trình duyệt có thể báo <i>"...isn't commonly downloaded"</i>. Di chuột vào file đang tải → bấm
+        <b>•••</b> hoặc mũi tên <b>↑</b> → chọn <b>Keep</b> (Chrome) / <b>Keep anyway</b> (Edge).</p>
+      </div></div>
+
+      <div class="step"><div class="n">2</div><div class="sb">
+        <h4>Lần đầu chạy app (Windows)</h4>
+        <p>Giải nén file ZIP → mở thư mục → double-click <b>TroLyKeToan.exe</b>. Nếu hiện bảng xanh
+        <b>"Windows protected your PC"</b> → bấm <b>More info</b> → <b>Run anyway</b>.</p>
+        <div class="smart">
+          <div class="hd">Windows protected your PC</div>
+          <div class="tx">Microsoft Defender SmartScreen prevented an unrecognized app from starting.</div>
+          <div class="app">App: TroLyKeToan.exe<br>Publisher: Unknown publisher</div>
+          <div class="moreinfo">More info&nbsp; <span class="point">👈 bấm vào đây</span></div>
+          <div class="btns"><span class="runbtn">Run anyway</span><span class="norun">Don't run</span></div>
+        </div>
+      </div></div>
+
+      <p class="note">Giữ nguyên <b>config.json</b> cạnh file .exe. Mọi update tự động sau đó hoàn toàn im lặng.</p>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Bắt đầu ra đáp án trong 1 phím.</h2>
+    <p>Miễn phí dùng thử · Ẩn khỏi taskbar · Tự động cập nhật.</p>
+    <a class="btn pri" href="https://github.com/MinhHuan115/troly-ketoan-ai/releases/latest/download/AssignmentAI.zip">⬇&nbsp; Tải về cho Windows</a>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <span>© 2026 Assignment AI</span>
+  <a href="https://github.com/MinhHuan115/troly-ketoan-ai">Source trên GitHub</a>
+</div></footer>
+
+</body></html>
